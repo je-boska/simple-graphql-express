@@ -1,19 +1,30 @@
 import express from 'express'
 import { graphqlHTTP } from 'express-graphql'
-import { buildSchema } from 'graphql'
+import { buildASTSchema } from 'graphql'
+import gql from 'graphql-tag'
 
 const app = express()
 
 // SCHEMA
-const schema = buildSchema(`
+const schema = buildASTSchema(gql`
   type Query {
-    hello: String
+    quoteOfTheDay: String
+    random: Float!
+    rollThreeDice: [Int]
   }
 `)
 
 // RESOLVER
 const rootValue = {
-  hello: () => 'Hello, World',
+  quoteOfTheDay: () => {
+    return Math.random() < 0.5 ? 'Take it easy' : 'Salvation lies within'
+  },
+  random: () => {
+    return Math.random()
+  },
+  rollThreeDice: () => {
+    return [1, 2, 3].map(_ => 1 + Math.floor(Math.random() * 6))
+  },
 }
 
 app.use(
