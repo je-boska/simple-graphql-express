@@ -2,30 +2,40 @@ import express from 'express'
 import { graphqlHTTP } from 'express-graphql'
 import { buildASTSchema } from 'graphql'
 import gql from 'graphql-tag'
+import { PEOPLE, POSTS, initializeData } from './mockData.js'
 
 const app = express()
 
 // SCHEMA
 const schema = buildASTSchema(gql`
   type Query {
-    quoteOfTheDay: String
-    random: Float!
-    rollThreeDice: [Int]
+    posts: [Post]
+    post(id: ID): Post
+    authors: [Person]
+    author(id: ID): Person
+  }
+  type Post {
+    id: ID
+    author: Person
+    body: String
+  }
+  type Person {
+    id: ID
+    posts: [Post]
+    firstName: String
+    lastName: String
   }
 `)
 
 // RESOLVER
 const rootValue = {
-  quoteOfTheDay: () => {
-    return Math.random() < 0.5 ? 'Take it easy' : 'Salvation lies within'
-  },
-  random: () => {
-    return Math.random()
-  },
-  rollThreeDice: () => {
-    return [1, 2, 3].map(_ => 1 + Math.floor(Math.random() * 6))
-  },
+  posts: () => POSTS.values(),
+  post: ({ id }) => POSTS.get(id),
+  authors: () => PEOPLE.values(),
+  author: ({ id }) => PEOPLE.get(id),
 }
+
+initializeData()
 
 app.use(
   '/graphql',
